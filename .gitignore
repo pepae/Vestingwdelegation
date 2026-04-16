@@ -1,0 +1,21 @@
+# Root-level gitignore for the Vestingwdelegation repo
+
+# ── Frontend ────────────────────────────────────────────────────────────────
+vesting-app/node_modules/
+vesting-app/dist/
+vesting-app/.env
+vesting-app/*.local
+
+# ── Hardhat / deploy ────────────────────────────────────────────────────────
+vesting-app/deploy/node_modules/
+vesting-app/deploy/cache/
+vesting-app/deploy/artifacts/
+
+# ── Playwright ───────────────────────────────────────────────────────────────
+vesting-app/playwright-report/
+vesting-app/test-results/
+
+# ── OS / editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/

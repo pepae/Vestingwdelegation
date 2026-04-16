@@ -1,0 +1,57 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: vesting-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: vesting-app
+
+      - name: Build
+        run: npm run build
+        working-directory: vesting-app
+        env:
+          # Public testnet contract addresses — set these as GitHub repository variables.
+          # Go to: Settings → Secrets and variables → Actions → Variables
+          VITE_VESTING_POOL_MANAGER: ${{ vars.VITE_VESTING_POOL_MANAGER }}
+          VITE_TOKEN_ADDRESS: ${{ vars.VITE_TOKEN_ADDRESS }}
+          # For a project page (username.github.io/REPO_NAME), set this to '/REPO_NAME/'
+          # For a user page (username.github.io) or custom domain, leave unset (defaults to '/').
+          VITE_BASE_URL: ${{ vars.VITE_BASE_URL }}
+
+      - name: Add .nojekyll
+        run: touch vesting-app/dist/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: vesting-app/dist
+
+      - uses: actions/deploy-pages@v4
+        id: deployment

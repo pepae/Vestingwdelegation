@@ -1,0 +1,243 @@
+# Vesting Dashboard with Delegation
+
+A React frontend for on-chain linear/exponential token vesting using the VestingPool / VestingPoolManager contract architecture (Shutter DAO style). Supports ERC20Votes delegation so locked tokens still carry voting power.
+
+---
+
+## What it does
+
+- Create vesting streams (linear or exponential curve, any duration, optional initial unlock)
+- Recipients delegate voting power from their VestingPool without transferring tokens
+- Track vesting positions by ID — persisted in localStorage
+- Claim unlocked tokens once they vest
+- Built-in faucet for testnet token minting
+- Bauhaus-style UI, light mode, no RainbowKit dependency
+
+---
+
+## Project structure
+
+```
+Vestingwdelegation/
+├── .github/workflows/deploy.yml   GitHub Actions → GitHub Pages
+├── vesting-app/
+│   ├── src/                       React + Wagmi frontend
+│   ├── deploy/
+│   │   ├── contracts/             Solidity (VestingPool, VestingPoolManager, token)
+│   │   ├── scripts/deploy.js      Hardhat deploy script
+│   │   └── hardhat.config.js      Network config
+│   ├── e2e/                       Playwright E2E tests
+│   └── .env                       Contract addresses + keys (never commit)
+```
+
+---
+
+## Prerequisites
+
+- Node.js 18 or 20 (Vite 5 requires Node < 22 for full compat)
+- A browser wallet (MetaMask or compatible)
+- ETH (or testnet gas token) in your deployer wallet
+
+---
+
+## Local development
+
+```bash
+cd vesting-app
+npm install
+cp .env.example .env        # fill in contract addresses (see deploy section)
+npm run dev                  # http://localhost:5173
+```
+
+---
+
+## Deploy contracts
+
+### Step 1 — Set up the deployer wallet
+
+Add to `vesting-app/.env`:
+
+```
+DEPLOYER_PRIVATE_KEY=0x...your private key...
+DEPLOYER_ADDRESS=0x...matching address...
+```
+
+Never commit this file. It is in `.gitignore`.
+
+---
+
+### Step 2 — Choose your network
+
+Edit `vesting-app/deploy/hardhat.config.js` to add the target network.
+
+**Gnosis Chiado (testnet — already configured):**
+
+```js
+chiado: {
+  url: "https://rpc.chiadochain.net",
+  accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+  chainId: 10200,
+}
+```
+
+Get free testnet xDAI: https://faucet.chiadochain.net
+
+**Ethereum Mainnet:**
+
+```js
+mainnet: {
+  url: process.env.MAINNET_RPC_URL,   // e.g. Alchemy/Infura endpoint
+  accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+  chainId: 1,
+}
+```
+
+Add to `.env`:
+```
+MAINNET_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
+```
+
+You need roughly 0.05–0.1 ETH in the deployer wallet to cover gas for all four contracts.
+
+---
+
+### Step 3 — Token choice (mainnet)
+
+For mainnet you have two options:
+
+**Option A — Use an existing ERC20Votes token**  
+Skip deploying `GenericToken`. Just set `VITE_TOKEN_ADDRESS` to your token's address and make sure the deployer wallet has enough tokens to fund vestings.
+
+**Option B — Deploy a new token**  
+Edit `deploy/contracts/GenericToken.sol` to remove the open `mint()` faucet before deploying to mainnet:
+
+```solidity
+// Remove or restrict this function for production:
+// function mint(address to, uint256 amount) external { ... }
+```
+
+Then the constructor mints 10,000,000 tokens to the deployer. Transfer tokens to the VestingPoolManager after deploy.
+
+---
+
+### Step 4 — Run the deploy script
+
+```bash
+cd vesting-app/deploy
+npm install
+
+# Testnet
+npx hardhat run scripts/deploy.js --network chiado
+
+# Mainnet
+npx hardhat run scripts/deploy.js --network mainnet
+```
+
+The script deploys four contracts in order:
+1. `VestingLibrary` — shared math library
+2. `VestingPool` implementation — cloned per user
+3. `GenericToken` (or skip if using existing token)
+4. `VestingPoolManager` — entry point for creating vestings
+
+It automatically writes `VITE_VESTING_POOL_MANAGER` and `VITE_TOKEN_ADDRESS` into `vesting-app/.env`.
+
+If you skipped token deployment (Option A), manually set `VITE_TOKEN_ADDRESS` in `.env`.
+
+---
+
+### Step 5 — Fund the pool (mainnet)
+
+The VestingPoolManager holds tokens on behalf of all vesting pools. Before creating any vestings, approve and transfer tokens to it:
+
+```
+token.approve(vestingPoolManagerAddress, totalAmount)
+```
+
+Your wallet must have sufficient token balance. The "Create Vesting" form in the UI handles the approval step automatically.
+
+---
+
+### Step 6 — Configure the frontend for mainnet
+
+**`vesting-app/src/wagmi.ts`** — add or replace with mainnet chain:
+
+```ts
+import { mainnet } from 'viem/chains'
+
+export const wagmiConfig = createConfig({
+  chains: [mainnet],
+  connectors: [injected()],
+  transports: {
+    [mainnet.id]: http(import.meta.env.VITE_MAINNET_RPC_URL),
+  },
+})
+```
+
+Add to `.env`:
+```
+VITE_MAINNET_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
+```
+
+**`vesting-app/src/contracts.ts`** — update the explorer URL:
+
+```ts
+export const CHIADO_EXPLORER_URL = 'https://etherscan.io'
+```
+
+---
+
+## Build for production
+
+```bash
+cd vesting-app
+npm run build     # outputs to dist/
+```
+
+For a subdirectory deploy (e.g. GitHub Pages project page), set:
+```
+VITE_BASE_URL=/your-repo-name/
+```
+
+---
+
+## GitHub Pages (automated)
+
+Push to `main`. The workflow in `.github/workflows/deploy.yml` builds and deploys automatically.
+
+Set these as GitHub repository variables (Settings → Secrets and variables → Actions → Variables):
+
+| Variable | Value |
+|---|---|
+| `VITE_VESTING_POOL_MANAGER` | Your deployed manager address |
+| `VITE_TOKEN_ADDRESS` | Your token address |
+| `VITE_BASE_URL` | `/your-repo-name/` |
+
+---
+
+## E2E tests (Chiado only)
+
+Tests require a running dev server and a funded deployer wallet on Chiado.
+
+```bash
+cd vesting-app
+npm run dev &
+node .\node_modules\playwright\cli.js test --project=chromium
+```
+
+Five tests run in serial:
+- T1: wallet auto-connects and shows address
+- T2: creates a linear vesting via UI
+- T3: tracks the vesting by ID
+- T4: delegates voting power from the pool
+- T5: claims vested tokens
+
+---
+
+## Key contract addresses (Gnosis Chiado testnet)
+
+| Contract | Address |
+|---|---|
+| VestingPoolManager | `0x10A27767cdf0a01C27c999a5595838e1E2825423` |
+| GenericToken (GVT) | `0xBD13202B16408EE2cD0a0b57Beae0C97a797DF7c` |
+
+Explorer: https://gnosis-chiado.blockscout.com
