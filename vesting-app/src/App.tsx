@@ -68,6 +68,18 @@ export default function App() {
             {/* Header actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               {isConnected && <FaucetButton />}
+              {isConnected && (
+                <a
+                  href="https://faucet.chiadochain.net/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="vd-btn vd-btn-ghost"
+                  style={{ fontSize: '0.6875rem', padding: '0.375rem 0.625rem', textDecoration: 'none' }}
+                  title="Get free Chiado xDAI for gas"
+                >
+                  xDAI Faucet ↗
+                </a>
+              )}
               <ConnectButton />
             </div>
           </div>
