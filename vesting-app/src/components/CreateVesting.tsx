@@ -482,6 +482,9 @@ export default function CreateVesting({ onVestingCreated }: Props) {
 
             {/* Proposal metadata */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-text-muted, #888)' }}>
+                Title and description are uploaded to IPFS and stored in the proposal batch so Decent DAO shows them in its UI.
+              </p>
               <div>
                 <label className="vd-label">Proposal title</label>
                 <input

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAccount, useSignTypedData } from 'wagmi'
-import { encodeFunctionData, hashTypedData, type Hex } from 'viem'
+import { encodeFunctionData, encodeAbiParameters, hashTypedData, type Hex } from 'viem'
 import { VESTING_POOL_MANAGER_ABI, TOKEN_ABI } from '../abis'
 import { CONTRACT_ADDRESSES } from '../contracts'
 
@@ -10,6 +10,42 @@ export const DECENT_DAO_URL = `https://app.decentdao.org/home?dao=sep:${DECENT_D
 
 // Safe canonical MultiSend v1.3.0 — same address on every EVM chain
 const MULTISEND_ADDRESS = '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761' as `0x${string}`
+
+// Decent DAO KeyValuePairs singleton — receives IPFS CID as ABI-encoded calldata.
+// Decent DAO reads the last MultiSend sub-tx targeting this address, decodes the
+// calldata as a string (IPFS CID), fetches the metadata, and shows the title.
+const DECENT_METADATA_ADDRESS = '0xdA00000000000000000000000000000000000Da0' as `0x${string}`
+
+/**
+ * Upload proposal metadata JSON to IPFS via Pinata.
+ * Requires VITE_PINATA_JWT to be set in the environment.
+ * Returns the IPFS CID (v0, e.g. "QmXxx...") or null on failure / when unconfigured.
+ */
+async function uploadProposalMetadata(
+  title: string,
+  description: string,
+): Promise<string | null> {
+  const jwt = import.meta.env.VITE_PINATA_JWT
+  if (!jwt) return null
+  try {
+    const res = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${jwt}`,
+      },
+      body: JSON.stringify({
+        pinataContent: { title, description, documentationUrl: '' },
+        pinataMetadata: { name: 'vesting-proposal-metadata' },
+      }),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return (data.IpfsHash as string) || null
+  } catch {
+    return null
+  }
+}
 
 const SAFE_API_BASE = 'https://api.safe.global/tx-service/sep/api/v1'
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000' as `0x${string}`
@@ -122,10 +158,31 @@ export function useSafeProposal() {
         ],
       })
 
-      // 3. Pack as MultiSend transactions bytes (operation=0 → CALL for each inner tx)
-      const packed = ('0x' +
+      // 3. Optionally upload metadata to IPFS and add a 3rd tx targeting
+      //    DECENT_METADATA_ADDRESS with the ABI-encoded IPFS CID as calldata.
+      //    Decent DAO reads the last MultiSend sub-tx to that address, decodes the
+      //    calldata as a string, fetches from IPFS, and shows the title in its UI.
+      let ipfsCid: string | null = null
+      if (params.title || params.description) {
+        ipfsCid = await uploadProposalMetadata(
+          params.title ?? '',
+          params.description ?? '',
+        )
+      }
+
+      // 4. Pack as MultiSend transactions bytes (operation=0 → CALL for each inner tx)
+      let packedHex =
         packTx(0, CONTRACT_ADDRESSES.token, 0n, approveData) +
-        packTx(0, CONTRACT_ADDRESSES.vestingPoolManager, 0n, vestingData)) as Hex
+        packTx(0, CONTRACT_ADDRESSES.vestingPoolManager, 0n, vestingData)
+
+      if (ipfsCid) {
+        // ABI-encode the IPFS CID as a bare string (no function selector) —
+        // same encoding Decent DAO uses: encodeAbiParameters([{type:'string'}], [cid])
+        const cidCalldata = encodeAbiParameters([{ type: 'string' }], [ipfsCid]) as Hex
+        packedHex += packTx(0, DECENT_METADATA_ADDRESS, 0n, cidCalldata)
+      }
+
+      const packed = ('0x' + packedHex) as Hex
 
       const multiSendData = encodeFunctionData({
         abi: MULTISEND_ABI,
@@ -133,7 +190,7 @@ export function useSafeProposal() {
         args: [packed],
       })
 
-      // 4. Build Safe TX struct (operation=1 → DELEGATECALL to MultiSend contract)
+      // 5. Build Safe TX struct (operation=1 → DELEGATECALL to MultiSend contract)
       const safeTx = {
         to: MULTISEND_ADDRESS,
         value: 0n,
@@ -152,7 +209,7 @@ export function useSafeProposal() {
         verifyingContract: DECENT_DAO_SAFE,
       } as const
 
-      // 5. Compute EIP-712 hash (also used as proposal ID in Decent DAO)
+      // 6. Compute EIP-712 hash (also used as proposal ID in Decent DAO)
       const txHash = hashTypedData({
         domain,
         types: SAFE_TX_TYPES,
@@ -160,7 +217,7 @@ export function useSafeProposal() {
         message: safeTx,
       })
 
-      // 6. Sign — this triggers a MetaMask EIP-712 popup
+      // 7. Sign — this triggers a MetaMask EIP-712 popup
       const signature = await signTypedDataAsync({
         domain,
         types: SAFE_TX_TYPES,
@@ -170,11 +227,10 @@ export function useSafeProposal() {
 
       setState('submitting')
 
-      // 7. Submit proposal to Safe Transaction Service
-      const origin = JSON.stringify({
-        name: params.title || 'Vesting proposal',
-        description: params.description || '',
-      })
+      // 8. Submit proposal to Safe Transaction Service.
+      //    The `origin` field identifies our app. Title/description are stored on IPFS
+      //    (via the 3rd MultiSend tx to DECENT_METADATA_ADDRESS) so Decent DAO can read them.
+      const origin = JSON.stringify({ name: 'Vesting App', url: 'https://app.decentdao.org' })
 
       const body = {
         to: MULTISEND_ADDRESS,
