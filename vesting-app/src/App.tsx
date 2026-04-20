@@ -71,14 +71,14 @@ export default function App() {
               {isConnected && <FaucetButton />}
               {isConnected && (
                 <a
-                  href="https://sepoliafaucet.com/"
+                  href="https://faucets.chain.link/sepolia"
                   target="_blank"
                   rel="noreferrer"
                   className="vd-btn vd-btn-ghost"
                   style={{ fontSize: '0.6875rem', padding: '0.375rem 0.625rem', textDecoration: 'none' }}
-                  title="Get free Chiado xDAI for gas"
+                  title="Get free Sepolia ETH for gas"
                 >
-                  xDAI Faucet ↗
+                  ETH Faucet ↗
                 </a>
               )}
               <ConnectButton />
@@ -94,7 +94,7 @@ export default function App() {
               Connect Wallet
             </div>
             <div className="vd-sub" style={{ fontSize: '0.9375rem' }}>
-              Switch to Gnosis Chiado (chain 10200) after connecting
+              Switch to Sepolia (chain 11155111) after connecting
             </div>
           </div>
         ) : (

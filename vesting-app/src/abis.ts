@@ -175,6 +175,16 @@ export const TOKEN_ABI = [
   },
   {
     type: 'function',
+    name: 'transfer',
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    outputs: [{ type: 'bool' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     name: 'mint',
     inputs: [
       { name: 'to', type: 'address' },
