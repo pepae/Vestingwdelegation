@@ -30,7 +30,8 @@ export default function App() {
 
   function addTrackedId(id: `0x${string}`) {
     setTrackedIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
-    setActiveTab('vestings')
+    // Delay tab switch so tests (and users) can read the vesting ID before it disappears
+    setTimeout(() => setActiveTab('vestings'), 4000)
   }
 
   function removeTrackedId(id: `0x${string}`) {
@@ -61,7 +62,7 @@ export default function App() {
                 <span className="vd-title" style={{ fontSize: '1.125rem' }}>Dashboard</span>
               </div>
               <div className="vd-sub" style={{ fontSize: '0.625rem', marginTop: '0.125rem', letterSpacing: '0.06em' }}>
-                Gnosis Chiado Testnet
+                Sepolia Testnet
               </div>
             </div>
 
@@ -70,7 +71,7 @@ export default function App() {
               {isConnected && <FaucetButton />}
               {isConnected && (
                 <a
-                  href="https://faucet.chiadochain.net/"
+                  href="https://sepoliafaucet.com/"
                   target="_blank"
                   rel="noreferrer"
                   className="vd-btn vd-btn-ghost"

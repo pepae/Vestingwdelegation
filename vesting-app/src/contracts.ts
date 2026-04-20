@@ -9,4 +9,4 @@ export const CONTRACT_ADDRESSES = {
 } as const
 
 export const CHIADO_FAUCET_URL = 'https://faucet.chiadochain.net'
-export const CHIADO_EXPLORER_URL = 'https://gnosis-chiado.blockscout.com'
+export const CHIADO_EXPLORER_URL = 'https://sepolia.etherscan.io'

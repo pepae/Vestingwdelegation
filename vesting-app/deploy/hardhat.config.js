@@ -17,5 +17,11 @@ module.exports = {
       chainId: 10200,
       gasPrice: "auto",
     },
+    sepolia: {
+      url: "https://rpc.sepolia.org",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      chainId: 11155111,
+      gasPrice: "auto",
+    },
   },
 };

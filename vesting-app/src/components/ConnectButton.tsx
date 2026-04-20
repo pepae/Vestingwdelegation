@@ -7,7 +7,7 @@ export default function ConnectButton() {
   const { disconnect } = useDisconnect()
 
   if (isConnected && address) {
-    const wrongChain = chain?.id !== 10200
+    const wrongChain = chain?.id !== 11155111
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {wrongChain && (

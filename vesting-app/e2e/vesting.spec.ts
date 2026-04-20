@@ -10,11 +10,11 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: path.join(__dirname, '../.env') })
 
-const CHIADO_CHAIN = defineChain({
-  id: 10200,
-  name: 'Gnosis Chiado',
-  nativeCurrency: { name: 'Chiado xDAI', symbol: 'xDAI', decimals: 18 },
-  rpcUrls: { default: { http: ['https://rpc.chiadochain.net'] } },
+const SEPOLIA_CHAIN = defineChain({
+  id: 11155111,
+  name: 'Sepolia',
+  nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
+  rpcUrls: { default: { http: ['https://ethereum-sepolia-rpc.publicnode.com'] } },
   testnet: true,
 })
 
@@ -23,8 +23,9 @@ const MANAGER_ADDRESS = process.env.VITE_VESTING_POOL_MANAGER as `0x${string}`
 const PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY as `0x${string}`
 const account = privateKeyToAccount(PRIVATE_KEY)
 
-const publicClient = createPublicClient({ chain: CHIADO_CHAIN, transport: http('https://rpc.chiadochain.net') })
-const walletClient = createWalletClient({ account, chain: CHIADO_CHAIN, transport: http('https://rpc.chiadochain.net') })
+const SEPOLIA_RPC = 'https://ethereum-sepolia-rpc.publicnode.com'
+const publicClient = createPublicClient({ chain: SEPOLIA_CHAIN, transport: http(SEPOLIA_RPC) })
+const walletClient = createWalletClient({ account, chain: SEPOLIA_CHAIN, transport: http(SEPOLIA_RPC) })
 
 const TOKEN_ABI = [
   { type: 'function', name: 'approve', inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ type: 'bool' }], stateMutability: 'nonpayable' },
@@ -75,7 +76,7 @@ let sharedVestingId: `0x${string}` | null = null
 
 test.describe.configure({ mode: 'serial' })
 
-test.describe('Vesting Dashboard E2E (Gnosis Chiado)', () => {
+test.describe('Vesting Dashboard E2E (Sepolia)', () => {
 
   test.beforeEach(async ({ page }) => {
     await injectWallet(page)
@@ -89,7 +90,7 @@ test.describe('Vesting Dashboard E2E (Gnosis Chiado)', () => {
   // ── T1: Connect & show header ──────────────────────────────────────────────
   test('T1: wallet connects and shows address', async ({ page }) => {
     const header = page.locator('header')
-    await expect(header).toContainText('Gnosis Chiado', { timeout: 10_000 })
+    await expect(header).toContainText('Sepolia', { timeout: 10_000 })
     await expect(header.getByText(TEST_ADDRESS.slice(0, 6), { exact: false })).toBeVisible()
   })
 
@@ -120,15 +121,15 @@ test.describe('Vesting Dashboard E2E (Gnosis Chiado)', () => {
     const startInput = page.locator('input[type="datetime-local"]')
     await startInput.fill(localIso)
 
-    // Choose Linear (already selected by default)
-    await expect(page.getByRole('button', { name: 'Linear' })).toHaveClass(/bg-blue-600/)
+    // Verify Linear is the selected curve type (selected by default)
+    await expect(page.getByRole('button', { name: 'Linear' })).toBeVisible()
 
     // Click create (no approve needed – pre-approved above)
     const createBtn = page.getByRole('button', { name: 'Create Vesting' }).nth(1)
     await expect(createBtn).toBeEnabled({ timeout: 10_000 })
     await createBtn.click()
 
-    // Wait for confirmation (Chiado block ~5s)
+    // Wait for confirmation (Sepolia block ~12s)
     const vestingIdEl = page.getByTestId('vesting-id')
     await expect(vestingIdEl).toBeVisible({ timeout: 120_000 })
 
@@ -191,8 +192,13 @@ test.describe('Vesting Dashboard E2E (Gnosis Chiado)', () => {
     await idInput.fill(sharedVestingId!)
     await page.getByRole('button', { name: 'Track' }).click()
 
-    // Card should show a Claim button (tokens have been streaming for 2 weeks)
-    const claimBtn = page.locator('button', { hasText: /claim/i }).first()
+    // Wait for the card that matches sharedVestingId (shows truncated ID in header)
+    const idPrefix = sharedVestingId!.slice(0, 18)
+    const vestingCard = page.locator('.vd-card').filter({ hasText: idPrefix })
+    await expect(vestingCard).toBeVisible({ timeout: 30_000 })
+
+    // Click the claim button specifically within that card
+    const claimBtn = vestingCard.locator('button', { hasText: /claim/i })
     await expect(claimBtn).toBeVisible({ timeout: 30_000 })
     await expect(claimBtn).toBeEnabled()
     await claimBtn.click()

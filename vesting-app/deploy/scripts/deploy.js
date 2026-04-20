@@ -14,9 +14,9 @@ async function main() {
   console.log("Deploying with:", deployer.address);
 
   const balance = await ethers.provider.getBalance(deployer.address);
-  console.log("Balance:", ethers.formatEther(balance), "xDAI");
+  console.log("Balance:", ethers.formatEther(balance), "ETH");
   if (balance < ethers.parseEther("0.01")) {
-    throw new Error("Insufficient xDAI. Fund address at https://faucet.chiadochain.net");
+    throw new Error("Insufficient ETH. Fund the deployer address with Sepolia ETH.");
   }
 
   // 1. Deploy VestingLibrary
@@ -64,7 +64,7 @@ async function main() {
   console.log("\n✓ Deployment complete. .env updated.");
   console.log("  Token:              ", tokenAddr);
   console.log("  VestingPoolManager: ", managerAddr);
-  console.log("\nBlockscout: https://blockscout.chiadochain.net/address/" + managerAddr);
+  console.log("\nEtherscan: https://sepolia.etherscan.io/address/" + managerAddr);
 }
 
 main().catch((err) => {
