@@ -211,7 +211,7 @@ export default function CreateVesting({ onVestingCreated }: Props) {
       ? Number(formatUnits(BigInt(String(daoBalance)), tokenDecimals)).toLocaleString(undefined, { maximumFractionDigits: 2 })
       : '…'
 
-  const isProposing = proposalState === 'signing' || proposalState === 'submitting'
+  const isProposing = proposalState === 'submitting'
 
   return (
     <div className="vd-card" style={{ maxWidth: '640px' }}>
@@ -525,10 +525,8 @@ export default function CreateVesting({ onVestingCreated }: Props) {
               className="vd-btn vd-btn-primary"
               style={{ padding: '0.6875rem', width: '100%' }}
             >
-              {proposalState === 'signing'
-                ? 'Sign in wallet…'
-                : proposalState === 'submitting'
-                ? 'Submitting to Safe…'
+              {proposalState === 'submitting'
+                ? 'Submitting proposal…'
                 : '⬡ Propose to Decent DAO'}
             </button>
 
@@ -539,7 +537,7 @@ export default function CreateVesting({ onVestingCreated }: Props) {
                   ✓ Proposal submitted to Decent DAO
                 </div>
                 <div className="vd-sub" style={{ fontSize: '0.75rem', marginBottom: '0.75rem' }}>
-                  As a 1-of-2 signer you can confirm and execute immediately.
+                  The proposal is live — VTT holders can now vote on Decent DAO.
                 </div>
                 <a
                   href={proposalUrl}
@@ -548,7 +546,7 @@ export default function CreateVesting({ onVestingCreated }: Props) {
                   className="vd-btn vd-btn-outline"
                   style={{ display: 'inline-block', fontSize: '0.75rem', padding: '0.375rem 0.75rem', textDecoration: 'none' }}
                 >
-                  View &amp; Execute on Decent DAO ↗
+                  View on Decent DAO ↗
                 </a>
               </div>
             )}
