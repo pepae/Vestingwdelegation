@@ -55,6 +55,14 @@ export default function CreateVesting({ onVestingCreated }: Props) {
     query: { enabled: !!address && !!CONTRACT_ADDRESSES.token },
   })
 
+  const { data: tokenBalance } = useReadContract({
+    address: CONTRACT_ADDRESSES.token,
+    abi: TOKEN_ABI,
+    functionName: 'balanceOf',
+    args: [address!],
+    query: { enabled: !!address && !!CONTRACT_ADDRESSES.token },
+  })
+
   const { writeContract, data: txHash, isPending } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: isConfirmed, data: receipt } =
     useWaitForTransactionReceipt({ hash: txHash })
@@ -120,6 +128,11 @@ export default function CreateVesting({ onVestingCreated }: Props) {
     step === 'idle' &&
     allowance !== undefined &&
     getAmountBigInt(form.amountTokens) > BigInt(String(allowance ?? '0'))
+
+  const insufficientBalance =
+    !!form.amountTokens &&
+    tokenBalance !== undefined &&
+    getAmountBigInt(form.amountTokens) > BigInt(String(tokenBalance ?? '0'))
 
   const canCreate = !needsApproval || (step !== 'idle' && isConfirmed)
 
@@ -257,9 +270,16 @@ export default function CreateVesting({ onVestingCreated }: Props) {
           <em>Delegate</em> tab &mdash; no token transfer required.
         </div>
 
+        {/* Insufficient balance warning */}
+        {insufficientBalance && (
+          <div className="vd-alert vd-alert-er" style={{ fontSize: '0.8125rem' }}>
+            ✗ Insufficient {sym} balance. Use the <strong>Get 10k {sym}</strong> button in the header to mint test tokens first.
+          </div>
+        )}
+
         {/* Action buttons */}
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          {needsApproval && (
+          {needsApproval && !insufficientBalance && (
             <button
               onClick={handleApprove}
               disabled={isPending || isConfirming}
@@ -271,7 +291,7 @@ export default function CreateVesting({ onVestingCreated }: Props) {
           )}
           <button
             onClick={handleCreate}
-            disabled={!canCreate || isPending || isConfirming || !form.recipient || !form.amountTokens}
+            disabled={!canCreate || insufficientBalance || isPending || isConfirming || !form.recipient || !form.amountTokens}
             className="vd-btn vd-btn-primary"
             style={{ flex: 1, padding: '0.6875rem' }}
           >
