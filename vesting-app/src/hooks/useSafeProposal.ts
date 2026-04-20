@@ -73,6 +73,10 @@ export interface VestingParams {
   startDate: bigint
   amount: bigint
   initialUnlock: bigint
+  /** Optional proposal title shown in Safe TX metadata */
+  title?: string
+  /** Optional proposal description shown in Safe TX metadata */
+  description?: string
 }
 
 export function useSafeProposal() {
@@ -167,6 +171,11 @@ export function useSafeProposal() {
       setState('submitting')
 
       // 7. Submit proposal to Safe Transaction Service
+      const origin = JSON.stringify({
+        name: params.title || 'Vesting proposal',
+        description: params.description || '',
+      })
+
       const body = {
         to: MULTISEND_ADDRESS,
         value: '0',
@@ -181,6 +190,7 @@ export function useSafeProposal() {
         contractTransactionHash: txHash,
         sender: address,
         signature,
+        origin,
       }
 
       const postRes = await fetch(

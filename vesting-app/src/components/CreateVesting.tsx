@@ -34,6 +34,8 @@ export default function CreateVesting({ onVestingCreated }: Props) {
     startDate: new Date().toISOString().slice(0, 16),
     amountTokens: '',
     initialUnlockTokens: '0',
+    proposalTitle: '',
+    proposalDescription: '',
   })
 
   const [step, setStep] = useState<'idle' | 'approving' | 'creating'>('idle')
@@ -175,6 +177,8 @@ export default function CreateVesting({ onVestingCreated }: Props) {
       startDate: startDateTs,
       amount,
       initialUnlock,
+      title: form.proposalTitle || undefined,
+      description: form.proposalDescription || undefined,
     })
   }
 
@@ -474,6 +478,34 @@ export default function CreateVesting({ onVestingCreated }: Props) {
                   ✗ You don't have enough {sym} to fund the DAO. Click <strong>Get 10k {sym}</strong> in the header first.
                 </div>
               )}
+            </div>
+
+            {/* Proposal metadata */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label className="vd-label">Proposal title</label>
+                <input
+                  type="text"
+                  data-testid="proposal-title"
+                  placeholder="e.g. Vest 50 GVT for contributor"
+                  value={form.proposalTitle}
+                  onChange={(e) => field('proposalTitle', e.target.value)}
+                  className="vd-input"
+                  style={{ width: '100%' }}
+                />
+              </div>
+              <div>
+                <label className="vd-label">Proposal description (optional)</label>
+                <textarea
+                  data-testid="proposal-description"
+                  placeholder="Why this vesting? Add context for other signers…"
+                  value={form.proposalDescription}
+                  onChange={(e) => field('proposalDescription', e.target.value)}
+                  className="vd-input"
+                  rows={3}
+                  style={{ width: '100%', resize: 'vertical', fontFamily: 'inherit' }}
+                />
+              </div>
             </div>
 
             {/* Explanation */}

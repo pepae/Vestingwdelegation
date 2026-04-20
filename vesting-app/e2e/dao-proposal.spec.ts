@@ -85,6 +85,12 @@ test.describe('DAO Proposal E2E (Sepolia)', () => {
     await page.locator('input[type="number"][min="1"][max="65535"]').fill('4')
     await page.locator('input[type="datetime-local"]').fill(new Date().toISOString().slice(0, 16))
 
+    // ── 5. Fill proposal metadata ─────────────────────────────────────────
+    const TEST_TITLE = `E2E test vesting ${Date.now()}`
+    const TEST_DESC  = 'Automated E2E: vest 50 GVT over 4 weeks for the deployer'
+    await page.getByTestId('proposal-title').fill(TEST_TITLE)
+    await page.getByTestId('proposal-description').fill(TEST_DESC)
+
     // ── 5. Verify Propose button is enabled ──────────────────────────────
     const proposeBtn = page.getByRole('button', { name: /Propose to Decent DAO/i })
     await expect(proposeBtn).toBeEnabled({ timeout: 15_000 })
@@ -123,11 +129,17 @@ test.describe('DAO Proposal E2E (Sepolia)', () => {
         to: string; value: string; data: string | null; operation: number
         safeTxGas: string; baseGas: string; gasPrice: string
         gasToken: string; refundReceiver: string; signatures: string | null
-        nonce: number; isExecuted: boolean
+        nonce: number; isExecuted: boolean; origin: string | null
         confirmations: Array<{ owner: string; signature: string }>
       }
     expect(txDetails.isExecuted).toBe(false)
     expect(txDetails.nonce).toBe(Number(nonceBefore))
+
+    // ── Assert proposal title/description are stored in Safe API origin ───
+    const origin = txDetails.origin ? JSON.parse(txDetails.origin) as { name?: string; description?: string } : {}
+    expect(origin.name).toBe(TEST_TITLE)
+    expect(origin.description).toBe(TEST_DESC)
+    console.log(`✓ Proposal metadata in Safe API: name="${origin.name}"`)
     console.log(`✓ Tx confirmed in Safe API (nonce=${txDetails.nonce}, not yet executed)`)
 
     // Build concatenated signatures from confirmations array (top-level .signatures may be null
