@@ -8,8 +8,8 @@ import { CONTRACT_ADDRESSES } from '../contracts'
 export const DECENT_DAO_SAFE = '0x09D6b08aE680d159656bE25415B80381D69b8eeD' as const
 export const DECENT_DAO_URL = `https://app.decentdao.org/home?dao=sep:${DECENT_DAO_SAFE}`
 
-// Safe canonical MultiSend (v1.3.0) — same address on every EVM chain
-const MULTISEND_ADDRESS = '0x38869bf66a61cF6bDB996a6aE40D5853Fd43B526' as `0x${string}`
+// Safe canonical MultiSend v1.3.0 — same address on every EVM chain
+const MULTISEND_ADDRESS = '0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761' as `0x${string}`
 
 const SAFE_API_BASE = 'https://api.safe.global/tx-service/sep/api/v1'
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000' as `0x${string}`
