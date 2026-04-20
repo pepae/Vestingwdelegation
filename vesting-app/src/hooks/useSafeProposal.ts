@@ -5,13 +5,13 @@ import { VESTING_POOL_MANAGER_ABI, TOKEN_ABI } from '../abis'
 import { CONTRACT_ADDRESSES } from '../contracts'
 
 // Azorius token-voting DAO on Sepolia
-export const DECENT_DAO_SAFE = '0x1fb6663a9eC52287CFa902bC354fd0051BB00a63' as const
+export const DECENT_DAO_SAFE = '0x4A590cC4C1688E226D0d3963b77BA4213756fBC3' as const
 export const DECENT_DAO_URL = `https://app.decentdao.org/home?dao=sep:${DECENT_DAO_SAFE}`
 
 // Azorius governance module — receives submitProposal calls
-const AZORIUS_ADDRESS = '0xBdc0ff2f3c3F28Ac9ACe33F5e631b7292Bf0478b' as `0x${string}`
+const AZORIUS_ADDRESS = '0x97D1499AF25937E585026Dcd923571F19Ebf4b7A' as `0x${string}`
 // LinearERC20Voting strategy — passed as first arg to submitProposal
-const STRATEGY_ADDRESS = '0xb0858a0a4512168b0ed75faa33798c7c392fcc1b' as `0x${string}`
+const STRATEGY_ADDRESS = '0x6c83E8efdF07D813943D59d45Fb777C7223e7260' as `0x${string}`
 
 // Minimal Azorius ABI — submitProposal + ProposalCreated event
 const AZORIUS_ABI = [

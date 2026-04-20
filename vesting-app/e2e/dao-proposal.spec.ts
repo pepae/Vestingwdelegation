@@ -25,9 +25,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: path.join(__dirname, '../.env') })
 
 // Azorius token-voting DAO on Sepolia
-const DAO_SAFE     = '0x1fb6663a9eC52287CFa902bC354fd0051BB00a63' as const
-const AZORIUS_ADDR = '0xBdc0ff2f3c3F28Ac9ACe33F5e631b7292Bf0478b' as const
-const STRATEGY     = '0xb0858a0a4512168b0ed75faa33798c7c392fcc1b' as const
+const DAO_SAFE     = '0x4A590cC4C1688E226D0d3963b77BA4213756fBC3' as const
+const AZORIUS_ADDR = '0x97D1499AF25937E585026Dcd923571F19Ebf4b7A' as const
+const STRATEGY     = '0x6c83E8efdF07D813943D59d45Fb777C7223e7260' as const
 const VTT_TOKEN    = '0x5A5D38Eb50f1467C7609524d7D735A2192640449' as const
 const GVT_TOKEN    = '0xcbAf6Bd959049f2Ecc06BF95737c83C929377383' as const
 const MANAGER_ADDR = '0x52a859FF891167785c2DfB5Bda47aA2290fd204C' as const

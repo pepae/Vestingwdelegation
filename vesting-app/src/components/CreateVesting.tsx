@@ -483,7 +483,7 @@ export default function CreateVesting({ onVestingCreated }: Props) {
             {/* Proposal metadata */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-text-muted, #888)' }}>
-                Title and description are uploaded to IPFS and stored in the proposal batch so Decent DAO shows them in its UI.
+                Title and description are stored on-chain in the proposal event and displayed by Decent DAO.
               </p>
               <div>
                 <label className="vd-label">Proposal title</label>
@@ -513,9 +513,9 @@ export default function CreateVesting({ onVestingCreated }: Props) {
 
             {/* Explanation */}
             <div className="vd-alert vd-alert-info" style={{ fontSize: '0.8125rem' }}>
-              <strong>How it works:</strong> Your wallet signs a Safe multisig proposal that batches{' '}
-              <code>approve</code> + <code>addVesting</code> into one atomic MultiSend transaction.{' '}
-              As a 1-of-2 signer you can confirm and execute it immediately from the Decent DAO UI.
+              <strong>How it works:</strong> Submits an on-chain proposal to the Azorius module batching{' '}
+              <code>approve</code> + <code>addVesting</code>. VTT token holders vote during the voting
+              period; once quorum and majority are met the proposal can be executed.
             </div>
 
             {/* Propose button */}
