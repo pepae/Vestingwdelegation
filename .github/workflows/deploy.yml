@@ -38,12 +38,8 @@ jobs:
         run: npm run build
         working-directory: vesting-app
         env:
-          # Public testnet contract addresses — set these as GitHub repository variables.
-          # Go to: Settings → Secrets and variables → Actions → Variables
-          VITE_VESTING_POOL_MANAGER: ${{ vars.VITE_VESTING_POOL_MANAGER }}
-          VITE_TOKEN_ADDRESS: ${{ vars.VITE_TOKEN_ADDRESS }}
-          # For a project page (username.github.io/REPO_NAME), set this to '/REPO_NAME/'
-          # For a user page (username.github.io) or custom domain, leave unset (defaults to '/').
+          # Contract addresses are hardcoded in src/contracts.ts for the Sepolia deployment.
+          # Only VITE_BASE_URL is needed here.
           VITE_BASE_URL: ${{ vars.VITE_BASE_URL }}
 
       - name: Add .nojekyll
