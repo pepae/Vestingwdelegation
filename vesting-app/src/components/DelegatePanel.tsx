@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { VESTING_POOL_ABI } from '../abis'
-import { CONTRACT_ADDRESSES, CHIADO_EXPLORER_URL } from '../contracts'
+import { CONTRACT_ADDRESSES, SEPOLIA_EXPLORER_URL } from '../contracts'
 
 export default function DelegatePanel() {
   const { address } = useAccount()
@@ -76,7 +76,7 @@ export default function DelegatePanel() {
           <div style={{ marginBottom: '1.25rem' }}>
             <div className="vd-label" style={{ marginBottom: '0.25rem' }}>Your VestingPool contract</div>
             <a
-              href={`${CHIADO_EXPLORER_URL}/address/${resolvedPool}`}
+              href={`${SEPOLIA_EXPLORER_URL}/address/${resolvedPool}`}
               target="_blank"
               rel="noreferrer"
               className="vd-addr"

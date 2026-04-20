@@ -1,5 +1,5 @@
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
-import { CHIADO_EXPLORER_URL } from '../contracts'
+import { SEPOLIA_EXPLORER_URL } from '../contracts'
 
 export default function ConnectButton() {
   const { address, isConnected, chain } = useAccount()
@@ -16,7 +16,7 @@ export default function ConnectButton() {
           </span>
         )}
         <a
-          href={`${CHIADO_EXPLORER_URL}/address/${address}`}
+          href={`${SEPOLIA_EXPLORER_URL}/address/${address}`}
           target="_blank"
           rel="noreferrer"
           data-testid="connected-address"

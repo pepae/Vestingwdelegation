@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { formatUnits } from 'viem'
 import { VESTING_POOL_ABI, TOKEN_ABI } from '../abis'
-import { CONTRACT_ADDRESSES, CHIADO_EXPLORER_URL } from '../contracts'
+import { CONTRACT_ADDRESSES, SEPOLIA_EXPLORER_URL } from '../contracts'
 import VestingCard from './VestingCard'
 
 interface Props {
@@ -107,7 +107,7 @@ export default function VestingList({ trackedIds, onAddId, onRemoveId }: Props) 
         <div className="vd-card-accent">
           <div className="vd-label" style={{ marginBottom: '0.25rem' }}>Your VestingPool contract</div>
           <a
-            href={`${CHIADO_EXPLORER_URL}/address/${poolAddress}`}
+            href={`${SEPOLIA_EXPLORER_URL}/address/${poolAddress}`}
             target="_blank"
             rel="noreferrer"
             className="vd-addr"
